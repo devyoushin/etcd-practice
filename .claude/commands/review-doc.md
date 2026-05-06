@@ -2,7 +2,7 @@ etcd 가이드 문서를 검토합니다.
 
 **사용법**: `/review-doc <파일 경로>`
 
-**예시**: `/review-doc backup-guide.md`
+**예시**: `/review-doc docs/backup-guide.md`
 
 검토 기준:
 

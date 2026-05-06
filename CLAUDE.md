@@ -19,7 +19,7 @@ etcd-practice/
 ├── agents/                    # doc-writer, cluster-designer, troubleshooter, backup-advisor
 ├── templates/                 # service-doc, runbook, incident-report
 ├── rules/                     # doc-writing, etcd-conventions, security-checklist, monitoring
-└── *-guide.md                 # 주제별 가이드 문서
+└── docs/                      # 주제별 가이드 문서
 ```
 
 ---
@@ -30,7 +30,7 @@ etcd-practice/
 |--------|------|---------|
 | `/new-doc` | 새 가이드 문서 생성 | `/new-doc defragmentation` |
 | `/new-runbook` | 새 런북 생성 | `/new-runbook etcd 멤버 교체` |
-| `/review-doc` | 문서 검토 | `/review-doc backup-guide.md` |
+| `/review-doc` | 문서 검토 | `/review-doc docs/backup-guide.md` |
 | `/add-troubleshooting` | 트러블슈팅 케이스 추가 | `/add-troubleshooting 쿼럼 손실` |
 | `/search-kb` | 지식베이스 검색 | `/search-kb etcd 백업 복구` |
 
@@ -40,13 +40,13 @@ etcd-practice/
 
 | 문서 | 주제 |
 |------|------|
-| `install.md` | etcd 설치 (Docker Compose) |
-| `architecture-guide.md` | etcd 아키텍처 (Raft, WAL) |
-| `basic-operations-guide.md` | 기본 CRUD 및 Watch |
-| `cluster-guide.md` | 3노드 클러스터 구성 |
-| `ha-guide.md` | 5노드 HA 클러스터 |
-| `backup-guide.md` | 스냅샷 백업/복구 |
-| `troubleshooting-guide.md` | 트러블슈팅 |
+| `docs/install.md` | etcd 설치 (Docker Compose) |
+| `docs/architecture-guide.md` | etcd 아키텍처 (Raft, WAL) |
+| `docs/basic-operations-guide.md` | 기본 CRUD 및 Watch |
+| `docs/cluster-guide.md` | 3노드 클러스터 구성 |
+| `docs/ha-guide.md` | 5노드 HA 클러스터 |
+| `docs/backup-guide.md` | 스냅샷 백업/복구 |
+| `docs/troubleshooting-guide.md` | 트러블슈팅 |
 
 ---
 
