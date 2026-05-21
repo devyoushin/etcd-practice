@@ -284,6 +284,303 @@ docker exec etcd-1 etcdctl alarm disarm
 
 ---
 
+---
+
+---
+
+# systemd로 5중화 클러스터 구성
+
+VM / 베어메탈 서버 5대에 etcd 바이너리를 직접 설치하고 systemd로 관리합니다.
+허용 장애 2개, 쿼럼 3개로 운영 환경 고가용성을 확보합니다.
+
+---
+
+## 구성 계획
+
+```
+서버           IP           client 포트   peer 포트
+──────────────────────────────────────────────────
+etcd-1    10.0.1.10     2379          2380
+etcd-2    10.0.1.11     2379          2380
+etcd-3    10.0.1.12     2379          2380
+etcd-4    10.0.1.13     2379          2380
+etcd-5    10.0.1.14     2379          2380
+
+허용 장애: 2개 노드
+쿼럼: 3개 이상 정상
+```
+
+> **방화벽**: 각 노드의 2379(client), 2380(peer) 포트가 클러스터 내부에서 열려 있어야 합니다.
+
+---
+
+## 사전 작업 — 전체 노드 공통
+
+**5대 모두**에서 동일하게 실행합니다.
+
+```bash
+ETCD_VER=v3.5.17
+ARCH=linux-amd64
+
+# 바이너리 설치
+curl -L https://github.com/etcd-io/etcd/releases/download/${ETCD_VER}/etcd-${ETCD_VER}-${ARCH}.tar.gz \
+  -o /tmp/etcd.tar.gz
+tar xzf /tmp/etcd.tar.gz -C /tmp/
+sudo mv /tmp/etcd-${ETCD_VER}-${ARCH}/etcd     /usr/local/bin/
+sudo mv /tmp/etcd-${ETCD_VER}-${ARCH}/etcdctl  /usr/local/bin/
+sudo mv /tmp/etcd-${ETCD_VER}-${ARCH}/etcdutl  /usr/local/bin/
+
+# 사용자 및 데이터 디렉토리 생성
+sudo useradd --system --no-create-home --shell /sbin/nologin etcd
+sudo mkdir -p /var/lib/etcd /etc/etcd
+sudo chown etcd:etcd /var/lib/etcd
+sudo chmod 700 /var/lib/etcd
+```
+
+---
+
+## 노드별 설정 파일
+
+`ETCD_INITIAL_CLUSTER`는 5대 모두 동일합니다. 각 서버에서 `ETCD_NAME`과 `*_ADVERTISE_*` 주소만 다릅니다.
+
+### etcd-1 (10.0.1.10)
+
+```bash
+sudo tee /etc/etcd/etcd.conf > /dev/null <<EOF
+ETCD_NAME=etcd-1
+ETCD_DATA_DIR=/var/lib/etcd
+
+ETCD_LISTEN_CLIENT_URLS=http://0.0.0.0:2379
+ETCD_ADVERTISE_CLIENT_URLS=http://10.0.1.10:2379
+
+ETCD_LISTEN_PEER_URLS=http://0.0.0.0:2380
+ETCD_INITIAL_ADVERTISE_PEER_URLS=http://10.0.1.10:2380
+
+ETCD_INITIAL_CLUSTER=etcd-1=http://10.0.1.10:2380,etcd-2=http://10.0.1.11:2380,etcd-3=http://10.0.1.12:2380,etcd-4=http://10.0.1.13:2380,etcd-5=http://10.0.1.14:2380
+ETCD_INITIAL_CLUSTER_TOKEN=etcd-ha-token
+ETCD_INITIAL_CLUSTER_STATE=new
+
+ETCD_AUTO_COMPACTION_RETENTION=1h
+ETCD_SNAPSHOT_COUNT=10000
+EOF
+
+sudo chmod 640 /etc/etcd/etcd.conf
+sudo chown root:etcd /etc/etcd/etcd.conf
+```
+
+### etcd-2 (10.0.1.11)
+
+```bash
+sudo tee /etc/etcd/etcd.conf > /dev/null <<EOF
+ETCD_NAME=etcd-2
+ETCD_DATA_DIR=/var/lib/etcd
+
+ETCD_LISTEN_CLIENT_URLS=http://0.0.0.0:2379
+ETCD_ADVERTISE_CLIENT_URLS=http://10.0.1.11:2379
+
+ETCD_LISTEN_PEER_URLS=http://0.0.0.0:2380
+ETCD_INITIAL_ADVERTISE_PEER_URLS=http://10.0.1.11:2380
+
+ETCD_INITIAL_CLUSTER=etcd-1=http://10.0.1.10:2380,etcd-2=http://10.0.1.11:2380,etcd-3=http://10.0.1.12:2380,etcd-4=http://10.0.1.13:2380,etcd-5=http://10.0.1.14:2380
+ETCD_INITIAL_CLUSTER_TOKEN=etcd-ha-token
+ETCD_INITIAL_CLUSTER_STATE=new
+
+ETCD_AUTO_COMPACTION_RETENTION=1h
+ETCD_SNAPSHOT_COUNT=10000
+EOF
+
+sudo chmod 640 /etc/etcd/etcd.conf
+sudo chown root:etcd /etc/etcd/etcd.conf
+```
+
+### etcd-3 (10.0.1.12)
+
+```bash
+sudo tee /etc/etcd/etcd.conf > /dev/null <<EOF
+ETCD_NAME=etcd-3
+ETCD_DATA_DIR=/var/lib/etcd
+
+ETCD_LISTEN_CLIENT_URLS=http://0.0.0.0:2379
+ETCD_ADVERTISE_CLIENT_URLS=http://10.0.1.12:2379
+
+ETCD_LISTEN_PEER_URLS=http://0.0.0.0:2380
+ETCD_INITIAL_ADVERTISE_PEER_URLS=http://10.0.1.12:2380
+
+ETCD_INITIAL_CLUSTER=etcd-1=http://10.0.1.10:2380,etcd-2=http://10.0.1.11:2380,etcd-3=http://10.0.1.12:2380,etcd-4=http://10.0.1.13:2380,etcd-5=http://10.0.1.14:2380
+ETCD_INITIAL_CLUSTER_TOKEN=etcd-ha-token
+ETCD_INITIAL_CLUSTER_STATE=new
+
+ETCD_AUTO_COMPACTION_RETENTION=1h
+ETCD_SNAPSHOT_COUNT=10000
+EOF
+
+sudo chmod 640 /etc/etcd/etcd.conf
+sudo chown root:etcd /etc/etcd/etcd.conf
+```
+
+### etcd-4 (10.0.1.13)
+
+```bash
+sudo tee /etc/etcd/etcd.conf > /dev/null <<EOF
+ETCD_NAME=etcd-4
+ETCD_DATA_DIR=/var/lib/etcd
+
+ETCD_LISTEN_CLIENT_URLS=http://0.0.0.0:2379
+ETCD_ADVERTISE_CLIENT_URLS=http://10.0.1.13:2379
+
+ETCD_LISTEN_PEER_URLS=http://0.0.0.0:2380
+ETCD_INITIAL_ADVERTISE_PEER_URLS=http://10.0.1.13:2380
+
+ETCD_INITIAL_CLUSTER=etcd-1=http://10.0.1.10:2380,etcd-2=http://10.0.1.11:2380,etcd-3=http://10.0.1.12:2380,etcd-4=http://10.0.1.13:2380,etcd-5=http://10.0.1.14:2380
+ETCD_INITIAL_CLUSTER_TOKEN=etcd-ha-token
+ETCD_INITIAL_CLUSTER_STATE=new
+
+ETCD_AUTO_COMPACTION_RETENTION=1h
+ETCD_SNAPSHOT_COUNT=10000
+EOF
+
+sudo chmod 640 /etc/etcd/etcd.conf
+sudo chown root:etcd /etc/etcd/etcd.conf
+```
+
+### etcd-5 (10.0.1.14)
+
+```bash
+sudo tee /etc/etcd/etcd.conf > /dev/null <<EOF
+ETCD_NAME=etcd-5
+ETCD_DATA_DIR=/var/lib/etcd
+
+ETCD_LISTEN_CLIENT_URLS=http://0.0.0.0:2379
+ETCD_ADVERTISE_CLIENT_URLS=http://10.0.1.14:2379
+
+ETCD_LISTEN_PEER_URLS=http://0.0.0.0:2380
+ETCD_INITIAL_ADVERTISE_PEER_URLS=http://10.0.1.14:2380
+
+ETCD_INITIAL_CLUSTER=etcd-1=http://10.0.1.10:2380,etcd-2=http://10.0.1.11:2380,etcd-3=http://10.0.1.12:2380,etcd-4=http://10.0.1.13:2380,etcd-5=http://10.0.1.14:2380
+ETCD_INITIAL_CLUSTER_TOKEN=etcd-ha-token
+ETCD_INITIAL_CLUSTER_STATE=new
+
+ETCD_AUTO_COMPACTION_RETENTION=1h
+ETCD_SNAPSHOT_COUNT=10000
+EOF
+
+sudo chmod 640 /etc/etcd/etcd.conf
+sudo chown root:etcd /etc/etcd/etcd.conf
+```
+
+---
+
+## systemd 유닛 파일 — 전체 노드 공통
+
+5대 모두에서 동일하게 작성합니다.
+
+```bash
+sudo tee /etc/systemd/system/etcd.service > /dev/null <<EOF
+[Unit]
+Description=etcd key-value store
+Documentation=https://etcd.io/docs/
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=notify
+User=etcd
+Group=etcd
+EnvironmentFile=/etc/etcd/etcd.conf
+ExecStart=/usr/local/bin/etcd
+Restart=on-failure
+RestartSec=5s
+LimitNOFILE=65536
+LimitNPROC=65536
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+sudo systemctl daemon-reload
+sudo systemctl enable etcd
+```
+
+---
+
+## 클러스터 시작 순서
+
+`ETCD_INITIAL_CLUSTER_STATE=new`일 때는 **5대를 거의 동시에** 시작해야 합니다.
+
+```bash
+# 5대 서버에서 각각 (거의 동시에) 실행
+sudo systemctl start etcd
+
+# 상태 확인
+sudo systemctl status etcd
+```
+
+> **팁**: Ansible 등 오케스트레이션 도구로 5대를 동시에 기동하면 타이밍 문제를 피할 수 있습니다.
+
+---
+
+## 클러스터 상태 검증
+
+```bash
+export ETCDCTL_API=3
+ENDPOINTS="http://10.0.1.10:2379,http://10.0.1.11:2379,http://10.0.1.12:2379,http://10.0.1.13:2379,http://10.0.1.14:2379"
+
+# 멤버 목록
+etcdctl --endpoints=$ENDPOINTS member list --write-out=table
+
+# 엔드포인트 상태 (Leader 확인)
+etcdctl --endpoints=$ENDPOINTS endpoint status --write-out=table
+
+# 헬스 체크
+etcdctl --endpoints=$ENDPOINTS endpoint health
+
+# 읽기/쓰기 테스트
+etcdctl --endpoints=$ENDPOINTS put /ha/test "5node cluster"
+etcdctl --endpoints=$ENDPOINTS get /ha/test
+```
+
+---
+
+## 장애 허용 검증
+
+```bash
+ENDPOINTS="http://10.0.1.10:2379,http://10.0.1.11:2379,http://10.0.1.12:2379,http://10.0.1.13:2379,http://10.0.1.14:2379"
+
+# === 시나리오 1: 2개 노드 동시 장애 (허용 범위) ===
+# etcd-4, etcd-5 서버에서 실행
+sudo systemctl stop etcd
+
+# 3개 노드만으로 계속 동작 (쿼럼 3/5 충족)
+ENDPOINTS_3="http://10.0.1.10:2379,http://10.0.1.11:2379,http://10.0.1.12:2379"
+etcdctl --endpoints=$ENDPOINTS_3 put /ha/test2 "still working"
+etcdctl --endpoints=$ENDPOINTS_3 get /ha/test2   # 정상 응답
+
+# === 시나리오 2: 3개 노드 장애 (쿼럼 붕괴) ===
+# etcd-3 서버에서도 중단
+sudo systemctl stop etcd
+
+# 2개 노드 남음 → 쿼럼 미달 → 쓰기 거부
+ENDPOINTS_2="http://10.0.1.10:2379,http://10.0.1.11:2379"
+etcdctl --endpoints=$ENDPOINTS_2 put /ha/test3 "this will fail"
+# Error: etcdserver: request timed out
+
+# === 복구: 중단된 노드 재시작 ===
+# etcd-3, etcd-4, etcd-5 서버에서 각각 실행
+sudo systemctl start etcd
+# 자동으로 클러스터 재합류 및 데이터 동기화
+
+# 전체 멤버 재확인
+etcdctl --endpoints=$ENDPOINTS member list --write-out=table
+```
+
+> **주의**: 재시작 시 `/var/lib/etcd`에 기존 데이터가 있으면 `ETCD_INITIAL_CLUSTER_STATE`는 무시됩니다.
+> 데이터가 있는 노드는 기존 클러스터에 자동으로 재합류합니다.
+
+---
+
 ## 참고 링크
 
 - [etcd 멤버 관리](https://etcd.io/docs/v3.5/op-guide/runtime-configuration/)
