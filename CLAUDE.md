@@ -3,7 +3,7 @@
 ## 프로젝트 설정
 - 환경: 로컬 (단일 호스트 다중 컨테이너)
 - etcd 버전: v3.5.17
-- 설치 방식: Docker / Docker Compose
+- 설치 방식: Docker / Docker Compose / systemd (바이너리)
 - 클러스터: 3중화 (기본) / 5중화 (고가용성)
 
 ---
@@ -40,13 +40,14 @@ etcd-practice/
 
 | 문서 | 주제 |
 |------|------|
-| `docs/install.md` | etcd 설치 (Docker Compose) |
+| `docs/install.md` | etcd 설치 (Docker Compose / systemd) |
 | `docs/architecture-guide.md` | etcd 아키텍처 (Raft, WAL) |
 | `docs/basic-operations-guide.md` | 기본 CRUD 및 Watch |
 | `docs/cluster-guide.md` | 3노드 클러스터 구성 |
 | `docs/ha-guide.md` | 5노드 HA 클러스터 |
 | `docs/backup-guide.md` | 스냅샷 백업/복구 |
 | `docs/troubleshooting-guide.md` | 트러블슈팅 |
+| `docs/kube-apiserver-etcd-storage-guide.md` | kube-apiserver → etcd 요청 흐름 및 Key 저장 구조 |
 
 ---
 
