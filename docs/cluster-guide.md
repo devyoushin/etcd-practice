@@ -463,6 +463,250 @@ docker run -d \
 
 ---
 
+---
+
+---
+
+# systemd로 멀티노드 클러스터 구성
+
+VM / 베어메탈 서버 3대에 etcd 바이너리를 직접 설치하고 systemd로 관리하는 방식입니다.
+
+---
+
+## 구성 계획
+
+```
+서버           IP           client 포트   peer 포트
+──────────────────────────────────────────────────
+etcd-1    10.0.1.10     2379          2380
+etcd-2    10.0.1.11     2379          2380
+etcd-3    10.0.1.12     2379          2380
+
+허용 장애: 1개 노드
+쿼럼: 2개 이상 정상
+```
+
+> **방화벽**: 각 노드의 2379(client), 2380(peer) 포트가 클러스터 내부에서 열려 있어야 합니다.
+
+---
+
+## 사전 작업 — 전체 노드 공통
+
+**3대 모두**에서 동일하게 실행합니다.
+
+```bash
+ETCD_VER=v3.5.17
+ARCH=linux-amd64
+
+# 바이너리 설치
+curl -L https://github.com/etcd-io/etcd/releases/download/${ETCD_VER}/etcd-${ETCD_VER}-${ARCH}.tar.gz \
+  -o /tmp/etcd.tar.gz
+tar xzf /tmp/etcd.tar.gz -C /tmp/
+sudo mv /tmp/etcd-${ETCD_VER}-${ARCH}/etcd     /usr/local/bin/
+sudo mv /tmp/etcd-${ETCD_VER}-${ARCH}/etcdctl  /usr/local/bin/
+sudo mv /tmp/etcd-${ETCD_VER}-${ARCH}/etcdutl  /usr/local/bin/
+
+# 사용자 및 데이터 디렉토리 생성
+sudo useradd --system --no-create-home --shell /sbin/nologin etcd
+sudo mkdir -p /var/lib/etcd /etc/etcd
+sudo chown etcd:etcd /var/lib/etcd
+sudo chmod 700 /var/lib/etcd
+```
+
+---
+
+## 노드별 설정 파일
+
+각 서버에서 자신의 IP에 맞게 `/etc/etcd/etcd.conf`를 작성합니다.
+
+### etcd-1 (10.0.1.10)
+
+```bash
+sudo tee /etc/etcd/etcd.conf > /dev/null <<EOF
+ETCD_NAME=etcd-1
+ETCD_DATA_DIR=/var/lib/etcd
+
+ETCD_LISTEN_CLIENT_URLS=http://0.0.0.0:2379
+ETCD_ADVERTISE_CLIENT_URLS=http://10.0.1.10:2379
+
+ETCD_LISTEN_PEER_URLS=http://0.0.0.0:2380
+ETCD_INITIAL_ADVERTISE_PEER_URLS=http://10.0.1.10:2380
+
+ETCD_INITIAL_CLUSTER=etcd-1=http://10.0.1.10:2380,etcd-2=http://10.0.1.11:2380,etcd-3=http://10.0.1.12:2380
+ETCD_INITIAL_CLUSTER_TOKEN=etcd-prod-token
+ETCD_INITIAL_CLUSTER_STATE=new
+
+ETCD_AUTO_COMPACTION_RETENTION=1h
+ETCD_SNAPSHOT_COUNT=10000
+EOF
+
+sudo chmod 640 /etc/etcd/etcd.conf
+sudo chown root:etcd /etc/etcd/etcd.conf
+```
+
+### etcd-2 (10.0.1.11)
+
+```bash
+sudo tee /etc/etcd/etcd.conf > /dev/null <<EOF
+ETCD_NAME=etcd-2
+ETCD_DATA_DIR=/var/lib/etcd
+
+ETCD_LISTEN_CLIENT_URLS=http://0.0.0.0:2379
+ETCD_ADVERTISE_CLIENT_URLS=http://10.0.1.11:2379
+
+ETCD_LISTEN_PEER_URLS=http://0.0.0.0:2380
+ETCD_INITIAL_ADVERTISE_PEER_URLS=http://10.0.1.11:2380
+
+ETCD_INITIAL_CLUSTER=etcd-1=http://10.0.1.10:2380,etcd-2=http://10.0.1.11:2380,etcd-3=http://10.0.1.12:2380
+ETCD_INITIAL_CLUSTER_TOKEN=etcd-prod-token
+ETCD_INITIAL_CLUSTER_STATE=new
+
+ETCD_AUTO_COMPACTION_RETENTION=1h
+ETCD_SNAPSHOT_COUNT=10000
+EOF
+
+sudo chmod 640 /etc/etcd/etcd.conf
+sudo chown root:etcd /etc/etcd/etcd.conf
+```
+
+### etcd-3 (10.0.1.12)
+
+```bash
+sudo tee /etc/etcd/etcd.conf > /dev/null <<EOF
+ETCD_NAME=etcd-3
+ETCD_DATA_DIR=/var/lib/etcd
+
+ETCD_LISTEN_CLIENT_URLS=http://0.0.0.0:2379
+ETCD_ADVERTISE_CLIENT_URLS=http://10.0.1.12:2379
+
+ETCD_LISTEN_PEER_URLS=http://0.0.0.0:2380
+ETCD_INITIAL_ADVERTISE_PEER_URLS=http://10.0.1.12:2380
+
+ETCD_INITIAL_CLUSTER=etcd-1=http://10.0.1.10:2380,etcd-2=http://10.0.1.11:2380,etcd-3=http://10.0.1.12:2380
+ETCD_INITIAL_CLUSTER_TOKEN=etcd-prod-token
+ETCD_INITIAL_CLUSTER_STATE=new
+
+ETCD_AUTO_COMPACTION_RETENTION=1h
+ETCD_SNAPSHOT_COUNT=10000
+EOF
+
+sudo chmod 640 /etc/etcd/etcd.conf
+sudo chown root:etcd /etc/etcd/etcd.conf
+```
+
+---
+
+## systemd 유닛 파일 — 전체 노드 공통
+
+3대 모두에서 동일하게 작성합니다.
+
+```bash
+sudo tee /etc/systemd/system/etcd.service > /dev/null <<EOF
+[Unit]
+Description=etcd key-value store
+Documentation=https://etcd.io/docs/
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=notify
+User=etcd
+Group=etcd
+EnvironmentFile=/etc/etcd/etcd.conf
+ExecStart=/usr/local/bin/etcd
+Restart=on-failure
+RestartSec=5s
+LimitNOFILE=65536
+LimitNPROC=65536
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+sudo systemctl daemon-reload
+sudo systemctl enable etcd
+```
+
+---
+
+## 클러스터 시작 순서
+
+`ETCD_INITIAL_CLUSTER_STATE=new`일 때는 **3대를 거의 동시에** 시작해야 합니다.
+한 노드만 먼저 올리면 쿼럼을 충족하지 못해 Leader 선출이 완료되지 않습니다.
+
+```bash
+# 3대 서버에서 각각 (거의 동시에) 실행
+sudo systemctl start etcd
+
+# 상태 확인
+sudo systemctl status etcd
+```
+
+> **팁**: Ansible 등 오케스트레이션 도구로 3대를 동시에 기동하면 타이밍 문제를 피할 수 있습니다.
+
+---
+
+## 클러스터 상태 검증
+
+어느 노드에서든 실행 가능합니다.
+
+```bash
+export ETCDCTL_API=3
+ENDPOINTS="http://10.0.1.10:2379,http://10.0.1.11:2379,http://10.0.1.12:2379"
+
+# 멤버 목록
+etcdctl --endpoints=$ENDPOINTS member list --write-out=table
+
+# 엔드포인트 상태 (Leader 확인)
+etcdctl --endpoints=$ENDPOINTS endpoint status --write-out=table
+
+# 헬스 체크
+etcdctl --endpoints=$ENDPOINTS endpoint health
+
+# 읽기/쓰기 테스트
+etcdctl --endpoints=$ENDPOINTS put /cluster/test "hello"
+etcdctl --endpoints=$ENDPOINTS get /cluster/test
+```
+
+정상 출력 예시:
+```
++------------------+---------+--------+-------------------------+-------------------------+------------+
+|        ID        | STATUS  |  NAME  |       PEER ADDRS        |      CLIENT ADDRS       | IS LEARNER |
++------------------+---------+--------+-------------------------+-------------------------+------------+
+| 1a2b3c4d5e6f7a8b | started | etcd-1 | http://10.0.1.10:2380   | http://10.0.1.10:2379   |      false |
+| 2b3c4d5e6f7a8b9c | started | etcd-2 | http://10.0.1.11:2380   | http://10.0.1.11:2379   |      false |
+| 3c4d5e6f7a8b9c0d | started | etcd-3 | http://10.0.1.12:2380   | http://10.0.1.12:2379   |      false |
++------------------+---------+--------+-------------------------+-------------------------+------------+
+```
+
+---
+
+## 장애 및 복구 검증
+
+```bash
+# etcd-1을 중단 (Leader여도 자동 재선출)
+sudo systemctl stop etcd    # etcd-1 서버에서
+
+# etcd-2, etcd-3만으로 계속 동작 (쿼럼 2/3 충족)
+ENDPOINTS_2="http://10.0.1.11:2379,http://10.0.1.12:2379"
+etcdctl --endpoints=$ENDPOINTS_2 put /cluster/test2 "still working"
+etcdctl --endpoints=$ENDPOINTS_2 get /cluster/test2
+
+# etcd-1 복구 → 자동으로 클러스터 재합류 및 데이터 동기화
+sudo systemctl start etcd   # etcd-1 서버에서
+
+# 전체 멤버 재확인
+etcdctl --endpoints=$ENDPOINTS member list --write-out=table
+```
+
+> **주의**: 재시작 시 `/var/lib/etcd`에 기존 데이터가 있으면 `ETCD_INITIAL_CLUSTER_STATE`는 무시됩니다.
+> 데이터가 있는 노드는 기존 클러스터에 자동으로 재합류합니다.
+
+---
+
 ## 참고 링크
 
 - [etcd 클러스터링 공식 문서](https://etcd.io/docs/v3.5/op-guide/clustering/)
