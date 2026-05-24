@@ -48,6 +48,7 @@ etcd-practice/
 | `docs/backup-guide.md` | 스냅샷 백업/복구 |
 | `docs/troubleshooting-guide.md` | 트러블슈팅 |
 | `docs/kube-apiserver-etcd-storage-guide.md` | kube-apiserver → etcd 요청 흐름 및 Key 저장 구조 |
+| `docs/k8s-etcd-ops-guide.md` | 대규모 온프레미스 k8s 환경 etcd 이슈 대응 가이드 |
 
 ---
 
