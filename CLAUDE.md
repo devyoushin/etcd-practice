@@ -16,9 +16,9 @@ etcd-practice/
 ├── .claude/
 │   ├── settings.json
 │   └── commands/              # /new-doc, /new-runbook, /review-doc, /add-troubleshooting, /search-kb
-├── agents/                    # doc-writer, cluster-designer, troubleshooter, backup-advisor
-├── templates/                 # service-doc, runbook, incident-report
-├── rules/                     # doc-writing, etcd-conventions, security-checklist, monitoring
+├── docs/agents/                    # doc-writer, cluster-designer, troubleshooter, backup-advisor
+├── docs/templates/                 # service-doc, runbook, incident-report
+├── docs/rules/                     # doc-writing, etcd-conventions, security-checklist, monitoring
 └── docs/                      # 주제별 가이드 문서
 ```
 

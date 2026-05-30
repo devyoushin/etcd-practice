@@ -1,0 +1,84 @@
+services:
+  etcd-1:
+    image: quay.io/coreos/etcd:v3.5.17
+    container_name: etcd-1
+    volumes:
+      - etcd1-data:/etcd-data
+    networks:
+      etcd-net:
+        ipv4_address: 172.20.0.11
+    ports:
+      - "2379:2379"
+    command:
+      - etcd
+      - --name=etcd-1
+      - --data-dir=/etcd-data
+      - --listen-client-urls=http://0.0.0.0:2379
+      - --advertise-client-urls=http://172.20.0.11:2379
+      - --listen-peer-urls=http://0.0.0.0:2380
+      - --initial-advertise-peer-urls=http://172.20.0.11:2380
+      - --initial-cluster=etcd-1=http://172.20.0.11:2380,etcd-2=http://172.20.0.12:2380,etcd-3=http://172.20.0.13:2380
+      - --initial-cluster-state=new
+      - --initial-cluster-token=etcd-cluster-token
+      - --auto-compaction-retention=1h
+      - --snapshot-count=10000
+
+  etcd-2:
+    image: quay.io/coreos/etcd:v3.5.17
+    container_name: etcd-2
+    volumes:
+      - etcd2-data:/etcd-data
+    networks:
+      etcd-net:
+        ipv4_address: 172.20.0.12
+    ports:
+      - "2380:2379"
+    command:
+      - etcd
+      - --name=etcd-2
+      - --data-dir=/etcd-data
+      - --listen-client-urls=http://0.0.0.0:2379
+      - --advertise-client-urls=http://172.20.0.12:2379
+      - --listen-peer-urls=http://0.0.0.0:2380
+      - --initial-advertise-peer-urls=http://172.20.0.12:2380
+      - --initial-cluster=etcd-1=http://172.20.0.11:2380,etcd-2=http://172.20.0.12:2380,etcd-3=http://172.20.0.13:2380
+      - --initial-cluster-state=new
+      - --initial-cluster-token=etcd-cluster-token
+      - --auto-compaction-retention=1h
+      - --snapshot-count=10000
+
+  etcd-3:
+    image: quay.io/coreos/etcd:v3.5.17
+    container_name: etcd-3
+    volumes:
+      - etcd3-data:/etcd-data
+    networks:
+      etcd-net:
+        ipv4_address: 172.20.0.13
+    ports:
+      - "2381:2379"
+    command:
+      - etcd
+      - --name=etcd-3
+      - --data-dir=/etcd-data
+      - --listen-client-urls=http://0.0.0.0:2379
+      - --advertise-client-urls=http://172.20.0.13:2379
+      - --listen-peer-urls=http://0.0.0.0:2380
+      - --initial-advertise-peer-urls=http://172.20.0.13:2380
+      - --initial-cluster=etcd-1=http://172.20.0.11:2380,etcd-2=http://172.20.0.12:2380,etcd-3=http://172.20.0.13:2380
+      - --initial-cluster-state=new
+      - --initial-cluster-token=etcd-cluster-token
+      - --auto-compaction-retention=1h
+      - --snapshot-count=10000
+
+networks:
+  etcd-net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/24
+
+volumes:
+  etcd1-data:
+  etcd2-data:
+  etcd3-data:

@@ -37,20 +37,20 @@ docker exec etcd etcdctl get hello
 ## 학습 경로
 
 ### 1단계: 설치
-- [Docker로 etcd 설치](./install.md)
+- [Docker로 etcd 설치](./docs/install.md)
 
 ### 2단계: 핵심 개념
-- [아키텍처 및 Raft 합의 알고리즘](./architecture-guide.md)
-- [기본 KV 조작](./basic-operations-guide.md)
+- [아키텍처 및 Raft 합의 알고리즘](./docs/architecture-guide.md)
+- [기본 KV 조작](./docs/basic-operations-guide.md)
 
 ### 3단계: 클러스터링 (핵심)
-- [3중화 클러스터](./cluster-guide.md)
-- [5중화 클러스터](./cluster-guide.md#5중화-클러스터)
-- [고가용성 운영](./ha-guide.md)
+- [3중화 클러스터](./docs/cluster-guide.md)
+- [5중화 클러스터](./docs/cluster-guide.md#5중화-클러스터)
+- [고가용성 운영](./docs/ha-guide.md)
 
 ### 4단계: 운영
-- [백업 및 복원](./backup-guide.md)
-- [트러블슈팅](./troubleshooting-guide.md)
+- [백업 및 복원](./docs/backup-guide.md)
+- [트러블슈팅](./docs/troubleshooting-guide.md)
 
 ---
 
@@ -59,13 +59,16 @@ docker exec etcd etcdctl get hello
 ```
 etcd-practice/
 ├── README.md
-├── install.md                  # Docker로 etcd 설치
-├── architecture-guide.md       # 아키텍처 및 Raft 합의
-├── basic-operations-guide.md   # KV 조작, Watch, Lease, Transaction
-├── cluster-guide.md            # 3중화 / 5중화 클러스터 구성
-├── ha-guide.md                 # 고가용성 운영 (멤버 교체, 장애 복구)
-├── backup-guide.md             # 스냅샷 백업 및 복원
-└── troubleshooting-guide.md    # 트러블슈팅
+├── CLAUDE.md
+├── docs/
+│   ├── README.md
+│   ├── install.md
+│   ├── architecture-guide.md
+│   ├── cluster-guide.md
+│   ├── backup-guide.md
+│   └── troubleshooting-guide.md
+└── ops/
+    └── README.md
 ```
 
 ---
