@@ -4,7 +4,7 @@ etcd 운영 보조 자료와 실습 자산을 두는 공간입니다.
 
 | 폴더 | 내용 |
 |------|------|
-| `install/` | 단일 노드 Compose와 systemd 설치 스크립트 |
+| `install/` | Helm, Docker Compose, systemd 설치 예시 |
 | `upgrade/` | systemd 기반 etcd 업그레이드 스크립트 |
 | `cluster/` | 클러스터 구성 예제 |
 | `backup/` | 백업 스크립트 |
@@ -17,6 +17,7 @@ etcd 운영 보조 자료와 실습 자산을 두는 공간입니다.
 |------|------|
 | `install/compose-single.yaml` | Docker Compose 기반 단일 노드 etcd |
 | `install/install-etcd-systemd.sh` | systemd 기반 etcd 설치 스크립트 |
+| `install/install-etcd-helm.sh` | Bitnami Helm Chart 기반 etcd 설치 스크립트 |
 | `upgrade/upgrade-etcd-systemd.sh` | snapshot 백업 후 etcd 바이너리 업그레이드 |
 | `cluster/compose-3node.yaml` | Docker Compose 기반 3중화 etcd 클러스터 |
 | `backup/backup-etcd-docker.sh` | Docker 환경 snapshot 백업 스크립트 |
@@ -24,3 +25,4 @@ etcd 운영 보조 자료와 실습 자산을 두는 공간입니다.
 | `scripts/etcd-healthcheck.sh` | endpoint health/status/member 점검 스크립트 |
 
 etcd 원리를 설명하는 문서는 `docs/`에 두고, 실제 예시 파일과 운영 보조 자료는 `ops/`에 둡니다.
+설치 방식은 `docs/install.md`에서 Helm, Docker Compose, systemd로 나눠 설명합니다.

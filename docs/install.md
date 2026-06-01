@@ -1,4 +1,32 @@
-# etcd 설치 가이드
+# etcd 설치 가이드 (Helm / Docker Compose / systemd)
+
+---
+
+## Helm으로 etcd 배포
+
+Kubernetes 환경에서는 Bitnami Helm Chart를 사용해 etcd를 배포할 수 있습니다.
+
+```bash
+helm repo add bitnami https://charts.bitnami.com/bitnami
+helm repo update
+
+kubectl create namespace etcd
+
+helm upgrade --install etcd bitnami/etcd \
+  --namespace etcd \
+  --set replicaCount=3 \
+  --wait \
+  --timeout 10m
+```
+
+설치 확인:
+
+```bash
+kubectl get pods -n etcd
+kubectl get svc -n etcd
+```
+
+> **참고**: Helm 방식은 Kubernetes 실습용입니다. 로컬 단일 호스트 실습은 아래 Docker Compose / systemd 절을 사용하세요.
 
 ---
 
@@ -69,6 +97,8 @@ volumes:
 ```bash
 docker compose -f compose-single.yaml up -d
 ```
+
+이 방식은 로컬 실습, 빠른 재현, 단일 호스트 데모에 적합합니다.
 
 ---
 
