@@ -583,9 +583,9 @@ P1 발생 → 즉시 팀 전체 알림 (Slack/PagerDuty)
 
 ## 참고 문서
 
-- [etcd 트러블슈팅 가이드](./troubleshooting-guide.md)
-- [HA 클러스터 구성 및 멤버 교체](./ha-guide.md)
-- [스냅샷 백업 및 복구](./backup-guide.md)
-- [kube-apiserver ↔ etcd 요청 흐름](./kube-apiserver-etcd-storage-guide.md)
+- [etcd 트러블슈팅 가이드](../troubleshooting/troubleshooting-guide.md)
+- [HA 클러스터 구성 및 멤버 교체](../operations/ha-guide.md)
+- [스냅샷 백업 및 복구](../backup/backup-guide.md)
+- [kube-apiserver ↔ etcd 요청 흐름](kube-apiserver-etcd-storage-guide.md)
 - [etcd 공식 운영 가이드](https://etcd.io/docs/v3.5/op-guide/)
 - [etcd 성능 벤치마킹](https://etcd.io/docs/v3.5/op-guide/performance/)

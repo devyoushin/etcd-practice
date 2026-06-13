@@ -193,7 +193,7 @@ docker compose -f compose-single.yaml down -v
 바이너리를 직접 설치하고 systemd 서비스로 관리하는 방식입니다.
 프로덕션 환경에서 VM/베어메탈에 etcd를 배포할 때 권장합니다.
 
-업그레이드 절차와 `ops/upgrade/upgrade-etcd-systemd.sh` 사용법은 [etcd 업그레이드 가이드](./install/upgrade/)를 참고합니다.
+업그레이드 절차와 `ops/upgrade/upgrade-etcd-systemd.sh` 사용법은 [etcd 업그레이드 가이드](upgrade/README.md)를 참고합니다.
 
 ---
 

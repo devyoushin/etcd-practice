@@ -1,6 +1,8 @@
 # etcd Ops
 
-etcd 운영 보조 자료와 실습 자산을 두는 공간입니다.
+etcd를 실제로 설치하거나 실습할 때 사용하는 Docker Compose 예제, 설치/업그레이드/백업/복원 스크립트, 점검 스크립트를 두는 공간입니다. 개념 설명은 `docs/`에, 적용 가능한 실행 자산은 `ops/`에 둡니다.
+
+## 폴더 구조
 
 | 폴더 | 내용 |
 |------|------|
@@ -24,5 +26,19 @@ etcd 운영 보조 자료와 실습 자산을 두는 공간입니다.
 | `restore/restore-single-node.sh` | snapshot 단일 노드 복원 스크립트 |
 | `scripts/etcd-healthcheck.sh` | endpoint health/status/member 점검 스크립트 |
 
-etcd 원리를 설명하는 문서는 `docs/`에 두고, 실제 예시 파일과 운영 보조 자료는 `ops/`에 둡니다.
-설치 방식은 `docs/install.md`에서 Helm, Docker Compose, systemd로 나눠 설명합니다.
+## 관련 문서
+
+| 작업 | 문서 |
+|------|------|
+| 설치 방식 선택 | [../docs/install/install.md](../docs/install/install.md) |
+| 업그레이드 | [../docs/install/upgrade/README.md](../docs/install/upgrade/README.md) |
+| 클러스터 구성 | [../docs/cluster/cluster-guide.md](../docs/cluster/cluster-guide.md) |
+| 백업/복구 | [../docs/backup/backup-guide.md](../docs/backup/backup-guide.md) |
+| HA 운영 | [../docs/operations/ha-guide.md](../docs/operations/ha-guide.md) |
+| 트러블슈팅 | [../docs/troubleshooting/troubleshooting-guide.md](../docs/troubleshooting/troubleshooting-guide.md) |
+
+## 관리 원칙
+
+- 재사용 가능한 Compose 파일과 스크립트는 이 디렉터리에 둡니다.
+- 문서 본문에는 핵심 스니펫만 넣고, 전체 적용 파일은 `ops/`를 기준으로 관리합니다.
+- 실제 운영 인증서, 토큰, 백업 데이터는 커밋하지 않습니다.
