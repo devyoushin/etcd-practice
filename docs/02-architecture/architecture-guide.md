@@ -436,4 +436,4 @@ metadata:
 - [Raft 논문](https://raft.github.io/raft.pdf)
 - [Raft 시각화](https://raft.github.io/)
 - [etcd MVCC 설명](https://etcd.io/docs/v3.5/learning/data_model/)
-- [kube-apiserver → etcd 요청 처리 및 저장 구조](../kubernetes/kube-apiserver-etcd-storage-guide.md)
+- [kube-apiserver → etcd 요청 처리 및 저장 구조](../05-kubernetes/kube-apiserver-etcd-storage-guide.md)

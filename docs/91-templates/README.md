@@ -12,5 +12,5 @@ etcd 운영 문서를 빠르게 만들기 위한 템플릿입니다.
 
 ## 관련 문서
 
-- [../rules/README.md](../rules/README.md)
-- [../agents/README.md](../agents/README.md)
+- [../90-standards/README.md](../90-standards/README.md)
+- [../99-agents/README.md](../99-agents/README.md)

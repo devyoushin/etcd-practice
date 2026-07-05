@@ -13,5 +13,5 @@ etcd 문서와 운영 절차를 쓸 때 지켜야 할 기준입니다.
 
 ## 관련 문서
 
-- [../agents/README.md](../agents/README.md)
-- [../templates/README.md](../templates/README.md)
+- [../99-agents/README.md](../99-agents/README.md)
+- [../91-templates/README.md](../91-templates/README.md)

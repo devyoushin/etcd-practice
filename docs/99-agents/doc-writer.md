@@ -20,5 +20,5 @@ description: etcd 가이드 문서 작성 전문가. 클러스터 운영, 백업
 
 ## 참조
 - `CLAUDE.md` — etcd 버전, 클러스터 구성
-- `rules/etcd-conventions.md` — 코드 표준
-- `templates/service-doc.md` — 문서 템플릿
+- `90-standards/etcd-conventions.md` — 코드 표준
+- `91-templates/service-doc.md` — 문서 템플릿

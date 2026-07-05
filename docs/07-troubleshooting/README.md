@@ -10,6 +10,6 @@ etcd 장애 진단과 문제 해결 문서를 모은 폴더입니다.
 
 ## 관련 문서
 
-- [../operations/ha-guide.md](../operations/ha-guide.md)
-- [../backup/backup-guide.md](../backup/backup-guide.md)
-- [../rules/monitoring.md](../rules/monitoring.md)
+- [../06-operations/ha-guide.md](../06-operations/ha-guide.md)
+- [../04-backup-restore/backup-guide.md](../04-backup-restore/backup-guide.md)
+- [../90-standards/monitoring.md](../90-standards/monitoring.md)
